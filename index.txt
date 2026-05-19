@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculus in Agrotech: Oil Palm Yield Derivatives</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0d9488 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="gradient-bg text-white py-8 px-6 shadow-md mb-8 text-center">
+        <h1 class="text-3xl font-bold tracking-tight">Agrotechnology Bioscience Application</h1>
+        <p class="text-emerald-100 mt-2 text-lg">Visualizing Oil Palm Growth Rates Using Derivatives $f'(x)$</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Panel: Scenario & Formulas -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Scenario Card -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-3 border-b pb-2 text-teal-700">The Bioscience Problem</h2>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                    In Malaysian agrotechnology, optimizing the yield of Oil Palm (*Elaeis guineensis*) is vital. After planting, a palm tree's Cumulative Fresh Fruit Bunch (FFB) yield follows a **Sigmoid (Logistic) Growth Curve**. 
+                </p>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                    While the total yield $f(x)$ increases over time, planters need to know the **exact rate of productivity growth** $f'(x)$ at any given year to optimize fertilizer schedules and forecast economic lifespans.
+                </p>
+                <div class="bg-emerald-50 p-3 rounded-lg text-xs text-emerald-800 border border-emerald-100">
+                    <strong>Data Source Reference:</strong> Based on realistic agronomic yield profiles published by the <em>Malaysian Palm Oil Board (MPOB)</em> (e.g., "MPOB Oil Palm Yield Performance Data").
+                </div>
+            </div>
+
+            <!-- Mathematical Modeling Card -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-3 border-b pb-2 text-blue-700">Mathematical Model</h2>
+                
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <span class="block font-semibold text-gray-700">Yield Function $f(x)$:</span>
+                        <div class="bg-gray-50 p-2 rounded font-mono text-center my-1 text-blue-600 border border-gray-200">
+                            f(x) = 30 / (1 + e^(-0.4 * (x - 7)))
+                        </div>
+                        <span class="text-xs text-gray-500 block">$f(x)$ = Cumulative Yield (tonnes/ha), $x$ = Tree Age (years). Cap parameter = 30 tonnes/ha.</span>
+                    </div>
+
+                    <hr class="border-gray-100">
+
+                    <div>
+                        <span class="block font-semibold text-gray-700">Derivative $f'(x)$ (Calculus Rate of Change):</span>
+                        <div class="bg-gray-50 p-2 rounded font-mono text-center my-1 text-teal-600 border border-gray-200">
+                            f'(x) = [12 * e^(-0.4 * (x - 7))] / [1 + e^(-0.4 * (x - 7))]²
+                        </div>
+                        <span class="text-xs text-gray-500 block">$f'(x)$ represents the <strong>instantaneous annual growth rate</strong> (tonnes/ha/year).</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Graph & Interactive Readout -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Chart Card -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Interactive Yield Curve (Ages 1 to 20)</h2>
+                    <span class="text-xs bg-teal-100 text-teal-800 px-2.5 py-1 rounded-full font-medium">Click any point on the line!</span>
+                </div>
+                <div class="relative h-96 w-full">
+                    <canvas id="yieldChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Interactive Output Display -->
+            <div id="outputCard" class="bg-slate-800 text-white p-6 rounded-xl shadow-md transition-all duration-300 transform scale-100 opacity-90">
+                <h3 class="text-lg font-semibold text-emerald-400 mb-2">💡 Interactive Calculus Readout</h3>
+                <div id="instructionText" class="text-sm text-slate-300">
+                    Click anywhere directly on the blue line graph above to analyze the biological derivative at that specific plant maturity stage.
+                </div>
+                
+                <div id="dataContent" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                    <div class="border-r border-slate-700 pr-2">
+                        <span class="text-xs text-slate-400 uppercase tracking-wider block">Tree Age ($x$)</span>
+                        <span id="outAge" class="text-2xl font-bold text-white">7 years</span>
+                    </div>
+                    <div class="border-r border-slate-700 pr-2">
+                        <span class="text-xs text-slate-400 uppercase tracking-wider block">Cumulative Yield ($f(x)$)</span>
+                        <span id="outYield" class="text-2xl font-bold text-blue-400">15.00 t/ha</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 uppercase tracking-wider block">Growth Rate ($f'(x)$)</span>
+                        <span id="outDerivative" class="text-2xl font-bold text-teal-400">3.00 t/ha/year</span>
+                    </div>
+                    <div class="md:col-span-3 mt-2 bg-slate-700 p-3 rounded text-sm text-slate-200">
+                        <strong class="text-emerald-300">Layman Explanation:</strong> <span id="outExplanation">Select a point.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Generate dataset based on logistic growth formula
+        const labels = [];
+        const yieldData = [];
+        const derivativeData = [];
+
+        for (let x = 1; x <= 20; x += 0.5) {
+            labels.push(x);
+            
+            // f(x) Logistic curve formula
+            const fx = 30 / (1 + Math.exp(-0.4 * (x - 7)));
+            yieldData.push(fx.toFixed(2));
+
+            // f'(x) Derivative formula
+            const expTerm = Math.exp(-0.4 * (x - 7));
+            const fPrimeX = (12 * expTerm) / Math.pow(1 + expTerm, 2);
+            derivativeData.push(fPrimeX.toFixed(2));
+        }
+
+        // Initialize Chart.js
+        const ctx = document.getElementById('yieldChart').getContext('2d');
+        const yieldChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Cumulative FFB Yield f(x) (tonnes/hectare)',
+                    data: yieldData,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#0d9488'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Yield: ${context.parsed.y} tonnes/ha`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Tree Age (Years Since Planting)', font: { weight: 'bold' } }
+                    },
+                    y: {
+                        title: { display: true, text: 'Yield (tonnes per Hectare)', font: { weight: 'bold' } },
+                        suggestedMax: 35
+                    }
+                },
+                // Trigger action when clicking a data point on the graph
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const age = labels[index];
+                        const currentYield = yieldData[index];
+                        const currentRate = derivativeData[index];
+
+                        displayCalculusInterpretation(age, currentYield, currentRate);
+                    }
+                }
+            }
+        });
+
+        // Function to handle the interactive layman explanation updates
+        function displayCalculusInterpretation(age, yieldVal, rateVal) {
+            document.getElementById('instructionText').classList.add('hidden');
+            const dataContent = document.getElementById('dataContent');
+            dataContent.classList.remove('hidden');
+
+            document.getElementById('outAge').innerText = `${age} Years`;
+            document.getElementById('outYield').innerText = `${yieldVal} t/ha`;
+            document.getElementById('outDerivative').innerText = `${rateVal} t/ha/yr`;
+
+            let explanation = "";
+            if (age < 5) {
+                explanation = `The tree is young. The positive derivative of ${rateVal} tonnes/ha/year means the palm is in its exponential growth stage, building up canopy structure. Production accelerates every year.`;
+            } else if (age >= 5 && age <= 9) {
+                explanation = `At ${age} years old, the tree is approaching or at its peak biological metabolic efficiency. The derivative is at its highest point (${rateVal} t/ha/yr). This indicates the inflection point where the tree adds the maximum amount of fruit mass per year.`;
+            } else if (age > 9 && age <= 15) {
+                explanation = `The tree remains highly productive, but notice how the derivative is dropping to ${rateVal} tonnes/ha/year. Yield is still increasing, but it's increasing at a slower rate. The plant is reaching its physiological equilibrium.`;
+            } else {
+                explanation = `The plantation has reached absolute maturity. The derivative drops near zero (${rateVal} t/ha/yr), meaning the yield has flattened out. Economically, this tells agrotech managers that replanting schedules should be prepared soon as minimal new growth occurs.`;
+            }
+
+            document.getElementById('outExplanation').innerText = explanation;
+
+            // Simple micro-animation effect for feedback
+            const card = document.getElementById('outputCard');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-102', 'border-2', 'border-emerald-500');
+            setTimeout(() => {
+                card.classList.remove('scale-102', 'border-2', 'border-emerald-500');
+                card.classList.add('scale-100');
+            }, 250);
+        }
+    </script>
+</body>
+</html>
